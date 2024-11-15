@@ -1,0 +1,78 @@
+import heapq
+
+# Definimos el mapa de carreteras
+mapa = [
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 2, 0]
+]
+
+# Definimos la función de costo
+def costo(posicion1, posicion2):
+    return 1
+
+# Definimos la función de heurística
+def heuristica(posicion):
+    x, y = posicion
+    return abs(x - 9) + abs(y - 8)
+
+# Definimos la función de movimiento
+def movimiento(posicion_actual):
+    x, y = posicion_actual
+    movimientos = [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
+    return [movimiento for movimiento in movimientos if 0 <= movimiento[0] < 10 and 0 <= movimiento[1] < 10]
+
+# Definimos la función de búsqueda A* con epsilon
+def a_estrella_epsilon(epsilon, inicio, fin):
+    abierto = []
+    cerrado = set()
+    heapq.heappush(abierto, (0, inicio))
+    costo_acumulado = {inicio: 0}
+    camino = {inicio: None}
+
+    while abierto:
+        _, ciudad_actual = heapq.heappop(abierto)
+        if ciudad_actual == fin:
+            break
+        cerrado.add(ciudad_actual)
+
+        for ciudad_siguiente in movimiento(ciudad_actual):
+            if ciudad_siguiente in cerrado:
+                continue
+            costo_nuevo = costo_acumulado[ciudad_actual] + 1
+            if ciudad_siguiente not in costo_acumulado or costo_nuevo < costo_acumulado[ciudad_siguiente]:
+                costo_acumulado[ciudad_siguiente] = costo_nuevo
+                prioridad = costo_acumulado[ciudad_siguiente] + heuristica(ciudad_siguiente)
+                heapq.heappush(abierto, (prioridad, ciudad_siguiente))
+                camino[ciudad_siguiente] = ciudad_actual
+
+    # Reconstruir el camino
+    if fin in camino:
+        reconstruido = []
+        actual = fin
+        while actual != inicio:
+            reconstruido.append(actual)
+            actual = camino[actual]
+        reconstruido.append(inicio)
+        reconstruido.reverse()
+        return reconstruido
+    else:
+        return None
+
+# Ejemplo de uso
+posicion_inicial = (1, 1)
+posicion_final = (9, 8)
+epsilon = 5
+
+camino = a_estrella_epsilon(epsilon, posicion_inicial, posicion_final)
+if camino is not None:
+    print("Camino encontrado:", camino)
+else:
+    print("No se encontró camino")
